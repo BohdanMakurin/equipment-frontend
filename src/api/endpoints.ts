@@ -8,6 +8,9 @@ const Endpoints = {
     },
     COMPANIES:{
       REGISTER: '/api/v1/signup'
+    },
+    USERS:{
+      REGISTER: '/api/v1/signup'
     }
   }
   

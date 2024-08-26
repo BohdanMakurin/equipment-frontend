@@ -1,12 +1,20 @@
 import { Dispatch } from "@reduxjs/toolkit"
 import api from "../../api"
 import { IEditRequest, ILoginRequest, ILoginResponse, IRegisterRequest } from "../../api/auth/types"
-import { loginStart, loginSucess, loginFailure, logoutSuccess,loadProfileStart, loadProfileFailure, loadProfileSucess } from "./authReducer"
+import { loginStart, loginSucess, loginFailure, logoutSuccess,loadProfileStart, loadProfileFailure, loadProfileSucess, resetAuth } from "./authReducer"
 import { history } from '../../utils/history'
 import { store } from ".."
 import { AxiosPromise } from "axios"
 import { isTokenExpired } from "../../utils/jwt"
 import { Profile } from "../../models/models"
+import { resetCompanies } from "../company/companyReducer"
+import { resetUsers } from "../user/userReducer"
+
+export const RESET_STORE = 'RESET_STORE';
+
+export const resetStore = () => ({
+    type: RESET_STORE,
+});
 
 export const loginUser =
   (data: ILoginRequest) =>
@@ -64,13 +72,15 @@ export const logoutUser =
   () =>
   async (dispatch: Dispatch): Promise<void> => {
       try {
-        // await api.auth.logout()
         localStorage.removeItem('token');
-        dispatch(logoutSuccess())
+        dispatch(resetCompanies());
+        dispatch(resetUsers());
+        dispatch(resetAuth());
+        dispatch(logoutSuccess());
 
         history.push('/')
       } catch (e) {
-          console.error(e)
+          console.error(e);
       }
   }
 

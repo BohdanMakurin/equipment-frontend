@@ -12,8 +12,6 @@ export const register = (params: IRegisterRequest): AxiosPromise<ILoginResponse>
 
 export const refreshToken = (): AxiosPromise<ILoginResponse> => axiosInstance.get(Endpoints.AUTH.REFRESH)
 
-// export const logout = (): AxiosPromise => axiosInstance.get(Endpoints.AUTH.LOGOUT)
-
 export const getProfile = (email: string): AxiosPromise<Profile> => axiosInstance.get(`/api/users/email/${email}`)
 
 export const editProfile = (id: number, params: IEditRequest): AxiosPromise<Profile> => axiosInstance.put(`/api/users/${id}`, params)

@@ -1,29 +1,40 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { IRootState, useAppDispatch } from "../../store";
-import { fetchAllCompanies } from "../../store/company/actionCreators";
+import { createCompany, fetchCompaniesByAdminId, removeCompany } from "../../store/company/actionCreators";
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Button, Typography } from '@mui/material';
+import { Box, IconButton } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
+import CompanyDetailsDialog from "../../components/dialog/companyDetailsDialog/companyDetailsDialog";
+import CreateCompanyDialog from "../../components/dialog/createCompanyDialog/createCompanyDialog";
+import ModeEditOutlineOutlinedIcon from '@mui/icons-material/ModeEditOutlineOutlined';
+import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import DeleteCompanyDialog from "../../components/dialog/deleteCompanyDialog/deleteCompanyDialog";
+
 
 const Companies = () => {
     const dispatch = useAppDispatch();
-    const [open, setOpen] = useState(false);
+    const [openDetails, setOpenDetails] = useState(false);
+    const [openCreate, setOpenCreate] = useState(false); // Состояние для диалогового окна создания компании
     const [selectedCompany, setSelectedCompany] = useState<any>(null);
+    const [openDeleteCompanyDialog, setOpenDeleteCompanyDialog] = useState(false);
 
-    // Проверяем, залогинен ли пользователь
     const isLoggedIn = useSelector(
         (state: IRootState) => !!state.auth.authData.accessToken
     );
 
-    // Получаем роль пользователя
     const isAdmin = useSelector(
         (state: IRootState) => state.auth.profileData.profile?.role === 'ROLE_ADMIN'
     );
 
-    // Загружаем все компании, если пользователь залогинен и является администратором
+    const profileId = useSelector(
+        (state: IRootState) => state.auth.profileData.profile?.id
+    );
+
     useEffect(() => {
-        if (isLoggedIn && isAdmin) {
-            dispatch(fetchAllCompanies());
+        if (isLoggedIn && isAdmin && profileId) {
+            dispatch(fetchCompaniesByAdminId(Number(profileId)));
         }
     }, [isLoggedIn, isAdmin, dispatch]);
 
@@ -31,7 +42,6 @@ const Companies = () => {
         (state: IRootState) => state.companies.companies
     );
 
-    // Преобразование данных компаний для использования в DataGrid
     const rows = companies.map((company) => ({
         id: company.companyId,
         companyName: company.name,
@@ -39,58 +49,126 @@ const Companies = () => {
     }));
 
     const columns: GridColDef[] = [
-        { field: 'id', headerName: 'ID', width: 90 },
-        { field: 'companyName', headerName: 'Company Name', width: 200 },
-        { field: 'description', headerName: 'Description', width: 250 },
+        { field: 'id', headerName: 'ID', flex: 1, minWidth: 100},
+        { field: 'companyName', headerName: 'Company Name', flex: 2, minWidth: 150},
+        { field: 'description', headerName: 'Description', flex: 3, minWidth: 150 },
+        {
+            field: 'actions',
+            headerName: 'Actions',
+            flex: 1,
+            minWidth: 100,
+            renderCell: (params) => (
+                <Box display="flex" justifyContent="start" width="100%">
+                <IconButton
+                    color="primary"
+                    onClick={() => handleEditClick(params.row.id)}
+                >
+                    <ModeEditOutlineOutlinedIcon />
+                </IconButton>
+                <IconButton
+                    sx={{ color: "red" }}
+                    onClick={() => handleDeleteClick(params.row.id)}
+                >
+                    <DeleteOutlineOutlinedIcon />
+                </IconButton>
+            </Box>
+            ),
+        },
     ];
 
-    // Обработчик клика на строку
-    const handleRowClick = (params: any) => {
-        setSelectedCompany(params.row);
-        setOpen(true);
+    const handleEditClick = (companyId: number) => {
+        const company = companies.find(company => company.companyId === companyId);
+        if (company) {
+            setSelectedCompany(company);
+            setOpenDetails(true);
+        }
     };
 
-    // Закрытие модального окна
-    const handleClose = () => {
-        setOpen(false);
+    const handleDeleteClick = (companyId: number) => {
+        const company = companies.find(company => company.companyId === companyId);
+        if (company) {
+            setSelectedCompany(company);
+            setOpenDeleteCompanyDialog(true);
+        }
+    };
+
+    const handleCloseDetails = () => {
+        setOpenDetails(false);
         setSelectedCompany(null);
     };
 
+    const handleSaveDetails = () => {
+        alert("Save Clicked");
+    };
+
+    const handleOpenCreate = () => {
+        setOpenCreate(true);
+    };
+
+    const handleCloseCreate = () => {
+        setOpenCreate(false);
+    };
+
+    const handleCreateCompany = (name: string, description: string) => {
+        const adminId = Number(profileId);
+        dispatch(createCompany({adminId, name, description}));
+        setOpenCreate(false);
+    };
+
+    const handleCloseDeleteCompanyDialog = () => {
+        setOpenDeleteCompanyDialog(false);
+    };
+
+    const handleConfirmDeleteCompany = () => {
+        setOpenDeleteCompanyDialog(false); 
+        dispatch(removeCompany(selectedCompany.companyId))
+    };
+    
     return (
         <div style={{ height: 'auto', width: '80%', margin: '0 auto' }}>
-            <h1 style={{ marginBottom: '20px' }}>Companies</h1>
-            <div style={{ height: 'auto', width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '20px 0' }}>
+                <h1 style={{ margin: 0 }}>Companies</h1>
+                <IconButton color="primary" onClick={handleOpenCreate}>
+                    <AddCircleOutlineOutlinedIcon fontSize="large" />
+                </IconButton>
+            </div>
+            <div style={{ height: 'auto', width: '100%', marginBottom: '100px'}}>
                 <DataGrid
                     rows={rows}
                     columns={columns}
                     initialState={{
-                    pagination: {
-                        paginationModel: { page: 0, pageSize: 5 },
-                    },
+                        pagination: {
+                            paginationModel: { page: 0, pageSize: 5 },
+                        },
                     }}
                     pageSizeOptions={[5, 10]}
                     disableColumnResize
-                    onRowClick={handleRowClick} // Обработчик клика на строку
+                    autoHeight
                 />
             </div>
 
-            {/* Модальное окно */}
-            <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>Company Details</DialogTitle>
-                <DialogContent>
-                    {selectedCompany && (
-                        <div>
-                            <Typography variant="h6">Company Name: {selectedCompany.companyName}</Typography>
-                            <Typography variant="body1">Description: {selectedCompany.description}</Typography>
-                            {/* Добавьте здесь дополнительные поля, если нужно */}
-                        </div>
-                    )}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose} color="primary">Close</Button>
-                </DialogActions>
-            </Dialog>
+            <CompanyDetailsDialog
+                open={openDetails}
+                company={selectedCompany}
+                onClose={handleCloseDetails}
+                onSave={handleSaveDetails}
+            />
+
+            <CreateCompanyDialog
+                open={openCreate}
+                onClose={handleCloseCreate}
+                onCreate={handleCreateCompany}
+            />
+
+            <DeleteCompanyDialog
+                open={openDeleteCompanyDialog}
+                company={selectedCompany}
+                onClose={handleCloseDeleteCompanyDialog}
+                onConfirm={handleConfirmDeleteCompany}
+            />
         </div>
+
+        
     );
 };
 

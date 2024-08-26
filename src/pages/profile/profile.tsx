@@ -5,8 +5,8 @@ import { getProfile, logoutUser, editProfile } from "../../store/auth/actionCrea
 import home from "../home";
 import Home from "../home";
 import { getEmailFromToken } from "../../utils/jwt";
-import { getCompaniesByUserId } from "../../api/companies";
-import { fetchCompaniesByUserId } from "../../store/company/actionCreators";
+import { getCompaniesByAdminId } from "../../api/companies";
+import { fetchCompaniesByAdminId } from "../../store/company/actionCreators";
 
 const Main = () => {
     const dispatch = useAppDispatch();
@@ -38,7 +38,7 @@ const Main = () => {
     }
     useEffect(() => {
         if (profile && profile.id) {
-          dispatch(fetchCompaniesByUserId(Number(profile.id)));
+          dispatch(fetchCompaniesByAdminId(Number(profile.id)));
         }
       }, [profile, dispatch]);
     const companies = useSelector(

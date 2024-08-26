@@ -4,11 +4,13 @@ import { useDispatch } from 'react-redux'
 
 import logger from 'redux-logger'
 import companyReducer from './company/companyReducer'
+import userReducer from './user/userReducer'
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    companies: companyReducer
+    companies: companyReducer,
+    users: userReducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(...(process.env.NODE_ENV !== 'production' ? [logger] : [])),
 })

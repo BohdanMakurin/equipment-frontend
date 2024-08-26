@@ -1,31 +1,16 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Admin, User } from '../../api/companies/types'
-// interface Admin {
-//   id: number
-//   firstName: string
-//   lastName: string
-//   email: string
-//   password: string
-//   role: string
+import { Admin, User, Company } from '../../api/companies/types'
+
+
+// interface Company {
+//   companyId: number
+//   admin: Admin
+//   name: string
+//   description: string
 //   createdAt: string
 //   updatedAt: string
-//   enabled: boolean
-//   authorities: { authority: string }[]
-//   username: string
-//   accountNonLocked: boolean
-//   accountNonExpired: boolean
-//   credentialsNonExpired: boolean
+//   employees: User[]
 // }
-
-interface Company {
-  companyId: number
-  admin: Admin
-  name: string
-  description: string
-  createdAt: string
-  updatedAt: string
-  employees: User[]
-}
 
 interface CompanyState {
   companies: Company[]
@@ -73,6 +58,9 @@ const companySlice = createSlice({
       ...state,
       companies: state.companies.filter(company => company.companyId !== action.payload),
     }),
+    resetCompanies: (state): CompanyState => ({
+      ...initialState,
+    }),
   },
 })
 
@@ -83,6 +71,7 @@ export const {
   addCompany,
   updateCompany,
   deleteCompany,
+  resetCompanies,
 } = companySlice.actions
 
 export default companySlice.reducer

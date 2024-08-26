@@ -13,6 +13,7 @@ import Profile from './pages/profile';
 import Home from './pages/home';
 import Companies from './pages/companies';
 import Footer from './components/footer';
+import Users from './pages/users/users';
 
 function App() {
 
@@ -28,6 +29,7 @@ function App() {
         <Route path='/home' element={isLoggedIn ? <Home /> : <Navigate to="/" />}/>
         <Route path='/profile' element={isLoggedIn ? <Profile /> : <Navigate to="/" />}/>
         <Route path='/companies' element={isLoggedIn ? <Companies /> : <Navigate to="/" />}/>
+        <Route path='/workers' element={isLoggedIn ? <Users /> : <Navigate to="/" />}/>
       </Routes>
       <Footer/>
     </Router>

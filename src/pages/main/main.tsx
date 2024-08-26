@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Login from "./components/login";
+import Login from "../login";
 import { useSelector } from "react-redux";
 import { IRootState, useAppDispatch } from "../../store";
 import { logoutUser } from "../../store/auth/actionCreators";
