@@ -14,6 +14,7 @@ import Home from './pages/home';
 import Companies from './pages/companies';
 import Footer from './components/footer';
 import Users from './pages/users/users';
+import Equipment from './pages/equipment/equipment';
 
 function App() {
 
@@ -30,6 +31,7 @@ function App() {
         <Route path='/profile' element={isLoggedIn ? <Profile /> : <Navigate to="/" />}/>
         <Route path='/companies' element={isLoggedIn ? <Companies /> : <Navigate to="/" />}/>
         <Route path='/workers' element={isLoggedIn ? <Users /> : <Navigate to="/" />}/>
+        <Route path='/equipment' element={isLoggedIn ? <Equipment /> : <Navigate to="/" />}/>
       </Routes>
       <Footer/>
     </Router>

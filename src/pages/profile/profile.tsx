@@ -36,15 +36,7 @@ const Main = () => {
         
         setIsEdit(false)
     }
-    useEffect(() => {
-        if (profile && profile.id) {
-          dispatch(fetchCompaniesByAdminId(Number(profile.id)));
-        }
-      }, [profile, dispatch]);
-    const companies = useSelector(
-        (state: IRootState) => state.companies.companies
-    );
-    console.log(profile)
+    
     return (
         <div>
             <button onClick={() => setIsEdit(true)}>Edit Profile</button>

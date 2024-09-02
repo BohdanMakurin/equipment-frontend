@@ -8,7 +8,7 @@ import {
   updateUser,
   deleteUser
 } from "./userReducer"
-import { CreateUserRequest } from "../../api/users/types";
+import { CreateUserRequest } from "../../models/models";
 
 export const RESET_STORE = 'RESET_STORE';
 

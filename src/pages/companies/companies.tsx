@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { IRootState, useAppDispatch } from "../../store";
-import { createCompany, fetchCompaniesByAdminId, removeCompany } from "../../store/company/actionCreators";
+import { createCompany, editCompany, fetchCompaniesByAdminId, removeCompany } from "../../store/company/actionCreators";
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { Box, IconButton } from '@mui/material';
+import { Box, Button, IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import CompanyDetailsDialog from "../../components/dialog/companyDetailsDialog/companyDetailsDialog";
@@ -11,6 +11,7 @@ import CreateCompanyDialog from "../../components/dialog/createCompanyDialog/cre
 import ModeEditOutlineOutlinedIcon from '@mui/icons-material/ModeEditOutlineOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import DeleteCompanyDialog from "../../components/dialog/deleteCompanyDialog/deleteCompanyDialog";
+import { CompanyEditRequest } from "../../models/models";
 
 
 const Companies = () => {
@@ -97,8 +98,8 @@ const Companies = () => {
         setSelectedCompany(null);
     };
 
-    const handleSaveDetails = () => {
-        alert("Save Clicked");
+    const handleSaveDetails = (companyId: number, updatedCompany: CompanyEditRequest) => {
+        dispatch(editCompany(companyId, updatedCompany))
     };
 
     const handleOpenCreate = () => {
@@ -128,9 +129,17 @@ const Companies = () => {
         <div style={{ height: 'auto', width: '80%', margin: '0 auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '20px 0' }}>
                 <h1 style={{ margin: 0 }}>Companies</h1>
-                <IconButton color="primary" onClick={handleOpenCreate}>
+                {/* <IconButton color="primary" onClick={handleOpenCreate}>
                     <AddCircleOutlineOutlinedIcon fontSize="large" />
-                </IconButton>
+                </IconButton> */}
+                <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<AddCircleOutlineOutlinedIcon />}
+                    onClick={handleOpenCreate}
+                >
+                    Add Company
+                </Button>
             </div>
             <div style={{ height: 'auto', width: '100%', marginBottom: '100px'}}>
                 <DataGrid

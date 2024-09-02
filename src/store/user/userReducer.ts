@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { User } from '../../api/users/types'; // Импортируйте необходимые типы
+import { User } from '../../models/models'; 
 
 interface UserState {
   users: User[];

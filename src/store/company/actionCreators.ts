@@ -8,7 +8,7 @@ import {
   updateCompany,
   deleteCompany
 } from "./companyReducer"
-import { Company, CreateCompanyRequest } from "../../api/companies/types"
+import { Company, CompanyEditRequest, CreateCompanyRequest } from "../../models/models"
 
 // Action creator для загрузки всех компаний 
 export const fetchAllCompanies = () =>
@@ -60,15 +60,15 @@ export const removeCompany = (companyId: number) =>
     }
   }
 // Action creator для обновления компании
-// export const editCompany = (company: Company) =>
-//   async (dispatch: Dispatch<any>): Promise<void> => {
-//     try {
-//       const res = await api.companies.update(company.companyId, company)
-//       dispatch(updateCompany(res.data))
-//     } catch (e: any) {
-//       console.error(e)
-//       dispatch(loadCompaniesFailure(e.message))
-//     }
-//   }
+export const editCompany = (companyId: number, updatedCompany: CompanyEditRequest) =>
+  async (dispatch: Dispatch<any>): Promise<void> => {
+    try {
+      const res = await api.companies.updateCompany(companyId, updatedCompany)
+      dispatch(updateCompany(res.data))
+    } catch (e: any) {
+      console.error(e)
+      dispatch(loadCompaniesFailure(e.message))
+    }
+  }
 
 

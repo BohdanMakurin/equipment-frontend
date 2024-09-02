@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Admin, User, Company } from '../../api/companies/types'
+import { CompanyAdmin, User} from '../../models/models'
+import { Company } from '../../models/models'
 
 
 // interface Company {

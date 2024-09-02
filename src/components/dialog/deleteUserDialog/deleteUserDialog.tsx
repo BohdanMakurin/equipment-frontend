@@ -29,7 +29,7 @@ const DeleteUserDialog: React.FC<DeleteUserDialogProps> = ({ open, user, onClose
                 <Button onClick={onClose} color="primary">
                     Cancel
                 </Button>
-                <Button onClick={onConfirm} color="secondary">
+                <Button onClick={onConfirm} sx={{color: "red"}}>
                     Delete
                 </Button>
             </DialogActions>
