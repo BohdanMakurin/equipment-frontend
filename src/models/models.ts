@@ -33,7 +33,8 @@ export interface Profile {
   email: string,
   password: string,
   role: string,
-  company: Company[],
+  company: Company,
+  equipment: Equipment[],
   createdAt: string,
   updatedAt: string
 }
@@ -53,6 +54,14 @@ export interface CreateUserRequest {
   lastName: string;
   email: string;
   password: string;
+  role: string;
+  companyId: number;
+}
+
+export interface EditUserRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
   role: string;
   companyId: number;
 }
@@ -89,7 +98,7 @@ export interface Equipment{
   updatedAt: string;
   category: Category;
   user: User;
-  QRCode: string;
+  qrCode: string;
   company: Company;
   location: string;
 }

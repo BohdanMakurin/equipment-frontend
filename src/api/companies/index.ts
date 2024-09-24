@@ -7,4 +7,4 @@ export const getCompaniesByAdminId = (id: number): AxiosPromise<Company[]> => ax
 export const getAllCompanies = (): AxiosPromise<Company[]> => axiosInstance.get(`/api/companies`);
 export const createCompany = (data: CreateCompanyRequest): AxiosPromise<Company> => axiosInstance.post(`/api/companies`, data);
 export const deleteCompany = (id: number): AxiosPromise<String> => axiosInstance.delete(`/api/companies/${id}`);
-export const updateCompany = (id: number, params: CompanyEditRequest): AxiosPromise<Company> => axiosInstance.put(`/api/companies/${id}`, params)
+export const updateCompany = (id: number, params: CompanyEditRequest): AxiosPromise<Company> => axiosInstance.put(`/api/companies/${id}`, params);

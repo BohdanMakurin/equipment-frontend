@@ -6,15 +6,16 @@ import { Box, IconButton, Button } from '@mui/material';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import ModeEditOutlineOutlinedIcon from '@mui/icons-material/ModeEditOutlineOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
-import { createEquipment, removeEquipment, fetchEquipmentByAdminId, updateEquipmentById } from "../../store/equipment/actionCreators";
+import { createEquipment, removeEquipment, fetchEquipmentByAdminId, updateEquipmentById, fetchEquipmentByCompanyId, fetchEquipmentByUserId } from "../../store/equipment/actionCreators";
 import EquipmentDetailsDialog from "../../components/dialog/equipmentDetailsDialog/equipmentDetailsDialog";
 import EquipmentDeleteDialog from "../../components/dialog/deleteEquipmentDialog/deleteEquipmentDialog";
 import EquipmentCategoryDialog from "../../components/dialog/equipmentCategoryDialog/equipmentCategoryDialog";
 import { fetchCompaniesByAdminId } from "../../store/company/actionCreators";
 import CreateEquipmentDialog from "../../components/dialog/createEquipmentDialog/createEquipmentDialog";
 import { fetchCategoriesByAdminId } from "../../store/equipmentCategory/actionCreators";
-import { fetchUsersByAdminId } from "../../store/user/actionCreators";
+import { fetchUsersByAdminId, fetchUsersByCompanyId } from "../../store/user/actionCreators";
 import { EquipmentEditRequest } from "../../models/models";
+import { find } from "@reduxjs/toolkit/dist/utils";
 
 const Equipment = () => {
     const dispatch = useAppDispatch();
@@ -32,8 +33,16 @@ const Equipment = () => {
         (state: IRootState) => state.auth.profileData.profile?.role === 'ROLE_ADMIN'
     );
 
+    const isManager = useSelector(
+        (state: IRootState) => state.auth.profileData.profile?.role === 'ROLE_MANAGER'
+    );
+
     const profileId = useSelector(
         (state: IRootState) => state.auth.profileData.profile?.id
+    );
+
+    const profile = useSelector(
+        (state: IRootState) => state.auth.profileData.profile
     );
 
     useEffect(() => {
@@ -42,11 +51,19 @@ const Equipment = () => {
             dispatch(fetchCompaniesByAdminId(Number(profileId))); 
             dispatch(fetchCategoriesByAdminId(Number(profileId))); 
             dispatch(fetchUsersByAdminId(Number(profileId)))
+        }else if (isLoggedIn && isManager && profile){
+            dispatch(fetchEquipmentByCompanyId(Number(profile.company.companyId)));
+            dispatch(fetchCompaniesByAdminId(Number(profile.company.admin.id))); 
+            dispatch(fetchCategoriesByAdminId(Number(profile.company.admin.id))); 
+            dispatch(fetchUsersByCompanyId(Number(profile.company.companyId)));
+        }else if((isLoggedIn && !isManager && !isAdmin && profile)){
+            dispatch(fetchEquipmentByUserId(Number(profileId)));
         }
-    }, [isLoggedIn, isAdmin, dispatch, profileId]);
+    }, [isLoggedIn, isAdmin, dispatch, profileId, profile, isManager]);
 
     const equipment = useSelector(
         (state: IRootState) => state.equipment.equipmentList
+        
     );
 
     const companies = useSelector(
@@ -64,13 +81,20 @@ const Equipment = () => {
         name: item.name,
         serialNumber: item.serialNumber,
         category: item.category.name,
+        location: item.location,
+        owner: item.user? item.user.firstName + " " + item.user.lastName : "No specified",
+        // owner: users.find((user) => user.id == item.user)
+        company: item.company.name
     }));
-
+    
     const columns: GridColDef[] = [
         { field: 'id', headerName: 'ID', flex: 1, minWidth: 100},
         { field: 'name', headerName: 'Name', flex: 2, minWidth: 150},
         { field: 'serialNumber', headerName: 'Serial Number', flex: 2, minWidth: 150 },
         { field: 'category', headerName: 'Category', flex: 2, minWidth: 150 },
+        { field: 'location', headerName: 'Location', flex: 2, minWidth: 150 },
+        { field: 'owner', headerName: 'Owner', flex: 2, minWidth: 150 },
+        { field: 'company', headerName: 'Company', flex: 2, minWidth: 150 },
         {
             field: 'actions',
             headerName: 'Actions',
@@ -84,12 +108,14 @@ const Equipment = () => {
                     >
                         <ModeEditOutlineOutlinedIcon />
                     </IconButton>
+                    {isAdmin || isManager ? 
                     <IconButton
                         sx={{ color: "red" }}
                         onClick={() => handleDeleteClick(params.row.id)}
                     >
                         <DeleteOutlineOutlinedIcon />
                     </IconButton>
+                    : []}
                 </Box>
             ),
         },
@@ -117,7 +143,6 @@ const Equipment = () => {
     };
 
     const handleSaveDetails = (updatedEquipment:EquipmentEditRequest, equipmentId: number) => {
-        console.log(updatedEquipment)
         dispatch(updateEquipmentById(updatedEquipment, equipmentId));
     };
 
@@ -153,22 +178,26 @@ const Equipment = () => {
         <div style={{ height: 'auto', width: '80%', margin: '0 auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '20px 0' }}>
                 <h1 style={{ margin: 0 }}>Equipment</h1>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<AddCircleOutlineOutlinedIcon />}
-                    onClick={handleOpenCategoryDialog}
-                >
-                    View EquipmentCategories
-                </Button>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<AddCircleOutlineOutlinedIcon />}
-                    onClick={() => setOpenCreate(true)}
-                >
-                    Add Equipment
-                </Button>
+                {isAdmin || isManager?
+                <>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<AddCircleOutlineOutlinedIcon />}
+                        onClick={handleOpenCategoryDialog}
+                    >
+                        View EquipmentCategories
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        startIcon={<AddCircleOutlineOutlinedIcon />}
+                        onClick={() => setOpenCreate(true)}
+                    >
+                        Add Equipment
+                    </Button>
+                </>
+                :[]}
             </div>
             <div style={{ height: 'auto', width: '100%', marginBottom: '100px' }}>
                 <DataGrid

@@ -9,11 +9,13 @@ import { isTokenExpired } from "../../utils/jwt"
 import { Profile } from "../../models/models"
 import { resetCompanies } from "../company/companyReducer"
 import { resetUsers } from "../user/userReducer"
+import { resetEquipment } from "../equipment/equipmentReducer"
+import { resetCategories } from "../equipmentCategory/equipmentCategoryReducer"
 
-export const RESET_STORE = 'RESET_STORE';
+export const RESET_AUTH_STORE = 'RESET_AUTH_STORE';
 
 export const resetStore = () => ({
-    type: RESET_STORE,
+    type: RESET_AUTH_STORE,
 });
 
 export const loginUser =
@@ -76,6 +78,8 @@ export const logoutUser =
         dispatch(resetCompanies());
         dispatch(resetUsers());
         dispatch(resetAuth());
+        dispatch(resetEquipment());
+        dispatch(resetCategories());
         dispatch(logoutSuccess());
 
         history.push('/')

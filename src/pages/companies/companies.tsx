@@ -3,7 +3,7 @@ import { useSelector } from "react-redux";
 import { IRootState, useAppDispatch } from "../../store";
 import { createCompany, editCompany, fetchCompaniesByAdminId, removeCompany } from "../../store/company/actionCreators";
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { Box, Button, IconButton } from '@mui/material';
+import { Box, Button, IconButton, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import CompanyDetailsDialog from "../../components/dialog/companyDetailsDialog/companyDetailsDialog";
@@ -12,6 +12,7 @@ import ModeEditOutlineOutlinedIcon from '@mui/icons-material/ModeEditOutlineOutl
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import DeleteCompanyDialog from "../../components/dialog/deleteCompanyDialog/deleteCompanyDialog";
 import { CompanyEditRequest } from "../../models/models";
+import { profile } from "console";
 
 
 const Companies = () => {
@@ -128,6 +129,7 @@ const Companies = () => {
     return (
         <div style={{ height: 'auto', width: '80%', margin: '0 auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '20px 0' }}>
+            
                 <h1 style={{ margin: 0 }}>Companies</h1>
                 {/* <IconButton color="primary" onClick={handleOpenCreate}>
                     <AddCircleOutlineOutlinedIcon fontSize="large" />
@@ -175,8 +177,9 @@ const Companies = () => {
                 onClose={handleCloseDeleteCompanyDialog}
                 onConfirm={handleConfirmDeleteCompany}
             />
+        
         </div>
-
+            
         
     );
 };

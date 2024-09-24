@@ -28,6 +28,28 @@ export const fetchEquipmentByAdminId = (id: number) =>
         dispatch(loadEquipmentFailure(e.message));
       }
     }
+export const fetchEquipmentByCompanyId = (id: number) =>
+  async (dispatch: Dispatch): Promise<void> => {
+    try {
+      dispatch(loadEquipmentStart());
+      const res = await api.equipment.getEquipmentByCompanyId(id);
+      dispatch(loadEquipmentSuccess(res.data));
+    } catch (e: any) {
+      console.error(e);
+      dispatch(loadEquipmentFailure(e.message));
+    }
+  }
+export const fetchEquipmentByUserId = (id: number) =>
+  async (dispatch: Dispatch): Promise<void> => {
+    try {
+      dispatch(loadEquipmentStart());
+      const res = await api.equipment.getEquipmentByUserId(id);
+      dispatch(loadEquipmentSuccess(res.data));
+    } catch (e: any) {
+      console.error(e);
+      dispatch(loadEquipmentFailure(e.message));
+    }
+  }
 
 // Action creator для добавления нового оборудования
 export const createEquipment = (equipment: CreateEquipmentRequest) =>

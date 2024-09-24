@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogTitle, DialogContent, Grid, Typography, Box, Button, DialogActions, Paper } from '@mui/material';
-import { Company, User } from '../../../models/models';
+import { Dialog, DialogTitle, DialogContent, Grid, Typography, Box, Button, DialogActions, Paper, IconButton } from '@mui/material';
+import { Company, EditUserRequest, Equipment, User } from '../../../models/models';
 import UserEdit from './userEdit'; // Импортируем компонент UserEdit
 import { SelectChangeEvent } from '@mui/material';
-
+import { fetchEquipmentByUserId } from "../../../store/equipment/actionCreators";
+import { IRootState, useAppDispatch } from '../../../store';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { useSelector } from 'react-redux';
 interface UserDetailsDialogProps {
     open: boolean;
     onClose: () => void;
-    onSave: (updatedUser: User) => void;
+    onSave: (id: number, updatedUser: EditUserRequest) => void;
     userDetails: User;
     companies: Company[];
 }
@@ -19,6 +22,7 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({ open, onClose, on
     const [email, setEmail] = useState<string>(userDetails.email);
     const [role, setRole] = useState<string>(userDetails.role.replace("ROLE_", ""));
     const [selectedCompanyId, setSelectedCompanyId] = useState<number>(userDetails.company.companyId);
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         if (userDetails) {
@@ -27,23 +31,53 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({ open, onClose, on
             setEmail(userDetails.email);
             setRole(userDetails.role.replace("ROLE_", ""));
             setSelectedCompanyId(userDetails.company.companyId);
+            dispatch(fetchEquipmentByUserId(Number(userDetails.id))); 
+                    
         }
     }, [userDetails]);
+
+    const equipment = useSelector(
+        (state: IRootState) => state.equipment.equipmentList
+        
+    );
+
+    const isAdmin = useSelector(
+        (state: IRootState) => state.auth.profileData.profile?.role === "ROLE_ADMIN"
+        
+    );
+    
+    const rows = equipment.map((item) => ({
+        id: item.equipmentId,
+        name: item.name,
+        serialNumber: item.serialNumber,
+        category: item.category.name,
+        location: item.location,
+        company: item.company.name
+    }));
+
+    const columns: GridColDef[] = [
+        { field: 'id', headerName: 'ID', flex: 1, minWidth: 100},
+        { field: 'name', headerName: 'Name', flex: 2, minWidth: 150},
+        { field: 'serialNumber', headerName: 'Serial Number', flex: 2, minWidth: 150 },
+        { field: 'category', headerName: 'Category', flex: 2, minWidth: 150 },
+        { field: 'location', headerName: 'Location', flex: 2, minWidth: 150 },
+        { field: 'company', headerName: 'Company', flex: 2, minWidth: 150 },
+        
+    ];
 
     const handleEditToggle = () => {
         setIsEditing(!isEditing);
     };
 
     const handleSave = () => {
-        const updatedUser: User = {
-            ...userDetails,
+        const updatedUser: EditUserRequest = {
             firstName,
             lastName,
             email,
             role: `ROLE_${role}`,
-            company: companies.find(company => company.companyId === selectedCompanyId) || userDetails.company
+            companyId: selectedCompanyId
         };
-        onSave(updatedUser);
+        onSave(userDetails.id, updatedUser);
         setIsEditing(false);
     };
 
@@ -95,50 +129,52 @@ const UserDetailsDialog: React.FC<UserDetailsDialogProps> = ({ open, onClose, on
                     <Grid item xs={9}>
                         <Paper elevation={2} style={{ padding: "20px", height: "100%" }}>
                             <h2 style={{ marginBottom: '20px' }}>{userDetails.firstName}'s equipment</h2>
-                            {/* <div style={{ height: 'auto', width: '100%' }}>
-                                {company?.employees && (
+                            <div style={{ height: 'auto', width: '100%' }}>
+                                
                                     <DataGrid
-                                        rows={company?.employees.map((employee: User) => ({
-                                            id: employee.id,
-                                            firstName: employee.firstName,
-                                            lastName: employee.lastName,
-                                            email: employee.email,
-                                            role: employee.role.replace("ROLE_", ""),
-                                        }))}
-                                        columns={columns}
-                                        initialState={{
-                                            pagination: {
-                                                paginationModel: { page: 0, pageSize: 5 },
-                                            },
-                                        }}
-                                        pageSizeOptions={[5, 10]}
-                                        disableColumnResize
-                                        autoHeight
-                                    />
-                                )}
-                            </div> */}
+                                    rows={rows}
+                                    columns={columns}
+                                    initialState={{
+                                        pagination: {
+                                            paginationModel: { page: 0, pageSize: 5 },
+                                        },
+                                    }}
+                                    pageSizeOptions={[5, 10]}
+                                    disableColumnResize
+                                    autoHeight
+                                />
+                                
+                            </div>
                         </Paper>
                     </Grid>
                 </Grid>
             </DialogContent>
             <DialogActions>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleEditToggle}
-                >
-                {isEditing ? 'Cancel Editing' : 'Edit'}
-                </Button>
-                {!isEditing && (
+                {isAdmin ?
+                    <>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleEditToggle}
+                    >
+                    {isEditing ? 'Cancel Editing' : 'Edit'}
+                    </Button>
+                    {!isEditing && (
+                        <Button onClick={onClose} color="primary">
+                            CLOSE
+                        </Button>
+                    )}
+                    {isEditing && (
+                        <Button onClick={handleSave} color="primary">
+                            SAVE
+                        </Button>
+                    )}
+                    </>
+                :
                     <Button onClick={onClose} color="primary">
                         CLOSE
                     </Button>
-                )}
-                {isEditing && (
-                    <Button onClick={handleSave} color="primary">
-                        SAVE
-                    </Button>
-                )}
+                }
             </DialogActions>
         </Dialog>
     );

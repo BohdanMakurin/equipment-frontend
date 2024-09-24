@@ -1,14 +1,10 @@
-// EquipmentDetails.tsx
 import React from 'react';
 import {
   Typography,
   Box,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
 } from '@mui/material';
 import { Equipment, User, Company, Category } from '../../../models/models';
+import api from '../../../api';
 
 interface EquipmentDetailsProps {
   equipment: Equipment | null;
@@ -23,6 +19,7 @@ const EquipmentDetails: React.FC<EquipmentDetailsProps> = ({
   companies,
   categories,
 }) => {
+  console.log(equipment);
   return (
     <Box mb={2}>
       <Typography variant="h6">Name: </Typography>
@@ -45,6 +42,16 @@ const EquipmentDetails: React.FC<EquipmentDetailsProps> = ({
 
       <Typography variant="body1">Location: </Typography>
       <Typography><b>{equipment?.location || 'Not provided'}</b></Typography>
+
+      {/* Добавьте отображение QR-кода */}
+      <Box mt={2}>
+        <Typography variant="body1">QR Code: </Typography>
+        {equipment?.qrCode? (
+                <img src={`http://localhost:8080/${equipment.qrCode}`} alt="QR Code" />
+            ) : (
+                <p>QR Code not available</p>
+            )}
+      </Box>
     </Box>
   );
 };

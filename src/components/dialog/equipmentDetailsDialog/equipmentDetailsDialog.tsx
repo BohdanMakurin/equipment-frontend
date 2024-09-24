@@ -18,6 +18,8 @@ import EquipmentDetails from './equipmentDetails';
 import EquipmentEdit from './equipmentEdit';
 import { Equipment, User, Company, Category, EquipmentEditRequest } from '../../../models/models';
 import { SelectChangeEvent } from '@mui/material';
+import { useSelector } from 'react-redux';
+import { IRootState } from '../../../store';
 
 interface EquipmentDetailsDialogProps {
   open: boolean;
@@ -41,6 +43,13 @@ const EquipmentDetailsDialog: React.FC<EquipmentDetailsDialogProps> = ({
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editedEquipment, setEditedEquipment] = useState<Equipment | null>(equipment);
 
+  const isAdmin = useSelector(
+    (state: IRootState) => state.auth.profileData.profile?.role === 'ROLE_ADMIN'
+);
+
+const isManager = useSelector(
+    (state: IRootState) => state.auth.profileData.profile?.role === 'ROLE_MANAGER'
+);
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     if (editedEquipment) {
@@ -110,6 +119,8 @@ const EquipmentDetailsDialog: React.FC<EquipmentDetailsDialogProps> = ({
         )}
       </DialogContent>
       <DialogActions>
+      {isAdmin || isManager ? 
+        <>
         <Button
           variant="contained"
           color="primary"
@@ -119,14 +130,20 @@ const EquipmentDetailsDialog: React.FC<EquipmentDetailsDialogProps> = ({
         </Button>
         {!isEditing && (
             <Button onClick={onClose} color="primary">
-                Close
+              CLOSE
             </Button>
         )}
         {isEditing && (
             <Button onClick={handleSave} color="primary">
-                    Save
+              SAVE
             </Button>
         )}
+        </>
+      :
+        <Button onClick={onClose} color="primary">
+          CLOSE
+        </Button>
+      }
       </DialogActions>
     </Dialog>
   );

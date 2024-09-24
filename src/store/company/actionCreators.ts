@@ -10,6 +10,12 @@ import {
 } from "./companyReducer"
 import { Company, CompanyEditRequest, CreateCompanyRequest } from "../../models/models"
 
+export const RESET_COMPANY_STORE = 'RESET_COMPANY_STORE';
+
+export const resetCompanyStore = () => ({
+    type: RESET_COMPANY_STORE,
+});
+
 // Action creator для загрузки всех компаний 
 export const fetchAllCompanies = () =>
   async (dispatch: Dispatch): Promise<void> => {

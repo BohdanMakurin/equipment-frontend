@@ -6,11 +6,12 @@ import { Box, Button, IconButton } from '@mui/material';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import ModeEditOutlineOutlinedIcon from '@mui/icons-material/ModeEditOutlineOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
-import { createUser, fetchUsersByAdminId, removeUser } from "../../store/user/actionCreators";
+import { createUser, fetchUsersByAdminId, fetchUsersByCompanyId, removeUser, updateUserById } from "../../store/user/actionCreators";
 import CreateUserDialog from "../../components/dialog/createUserDialog/createUserDialog";
 import { fetchCompaniesByAdminId } from "../../store/company/actionCreators";
 import DeleteUserDialog from "../../components/dialog/deleteUserDialog/deleteUserDialog";
 import UserDetailsDialog from "../../components/dialog/userDetailsDialog/userDetailsDialog"; // Импортируем новый диалог
+import { EditUserRequest, User } from "../../models/models";
 
 const Users = () => {
     const dispatch = useAppDispatch();
@@ -29,15 +30,26 @@ const Users = () => {
         (state: IRootState) => state.auth.profileData.profile?.role === 'ROLE_ADMIN'
     );
 
+    const isManager = useSelector(
+        (state: IRootState) => state.auth.profileData.profile?.role === 'ROLE_MANAGER'
+    );
+
     const profileId = useSelector(
         (state: IRootState) => state.auth.profileData.profile?.id
+    );
+
+    const profile = useSelector(
+        (state: IRootState) => state.auth.profileData.profile
     );
 
     useEffect(() => {
         if (isLoggedIn && isAdmin && profileId) {
             dispatch(fetchUsersByAdminId(Number(profileId)));
-            dispatch(fetchCompaniesByAdminId(Number(profileId))); // Загрузка списка компаний
+            dispatch(fetchCompaniesByAdminId(Number(profileId)));
+        }else if (isLoggedIn && isManager && profile){
+            dispatch(fetchUsersByCompanyId(Number(profile.company.companyId)))
         }
+
     }, [isLoggedIn, isAdmin, dispatch, profileId]);
 
     const users = useSelector(
@@ -81,12 +93,14 @@ const Users = () => {
                     >
                         <ModeEditOutlineOutlinedIcon />
                     </IconButton>
+                    {isAdmin?
                     <IconButton
                         sx={{ color: "red" }}
                         onClick={() => handleDeleteClick(params.row.id)}
                     >
                         <DeleteOutlineOutlinedIcon />
                     </IconButton>
+                    : []}
                 </Box>
             ),
         },
@@ -113,8 +127,8 @@ const Users = () => {
         setUserDetails(null);
     };
 
-    const handleSaveDetails = () => {
-        alert("Save Clicked");
+    const handleSaveDetails = (id: number, updatedUser: EditUserRequest) => {
+        dispatch(updateUserById(id, updatedUser));
     };
 
     const handleOpenCreate = () => {
@@ -143,9 +157,7 @@ const Users = () => {
         <div style={{ height: 'auto', width: '80%', margin: '0 auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '20px 0' }}>
                 <h1 style={{ margin: 0 }}>Workers</h1>
-                {/* <IconButton color="primary" onClick={handleOpenCreate}>
-                    <AddCircleOutlineOutlinedIcon fontSize="large" />
-                </IconButton> */}
+                {isAdmin? 
                 <Button
                     variant="contained"
                     color="primary"
@@ -154,6 +166,7 @@ const Users = () => {
                 >
                     Add Employee
                 </Button>
+                : []}
             </div>
             <div style={{ height: 'auto', width: '100%', marginBottom: '100px' }}>
                 <DataGrid

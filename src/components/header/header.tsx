@@ -21,7 +21,14 @@ import AdbIcon from '@mui/icons-material/Adb';
 // Импортируем компонент LogoutDialog
 import LogoutDialog from "../dialog/logoutDialog/logoutDialog";
 
-const pages = ['Home', 'Workers', 'Companies', 'Equipment'];
+// Все страницы
+const allPages = [
+  { name: 'Home', path: '/' },
+  { name: 'Equipment', path: '/equipment' },
+  { name: 'Workers', path: '/workers' },
+  { name: 'Companies', path: '/companies' }
+];
+
 const settings = ['Profile', 'Logout'];
 
 function Header() {
@@ -36,10 +43,12 @@ function Header() {
       dispatch(getProfile(email));
     }
   }, [email, dispatch]);
-  
+
   const profile = useSelector(
     (state: IRootState) => state.auth.profileData.profile
   );
+
+  const role = profile?.role; // Получаем роль пользователя
 
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
@@ -72,15 +81,27 @@ function Header() {
   };
 
   const handleConfirmLogout = () => {
-    // Логика выхода пользователя из системы
     setOpenLogoutDialog(false); // Закрываем диалоговое окно после подтверждения
     dispatch(logoutUser());
   };
 
+  // Определяем, какие вкладки показывать на основе роли
+  const getFilteredPages = () => {
+    if (role === "ROLE_ADMIN") {
+      return allPages; // Админ видит все вкладки
+    } else if (role === "ROLE_MANAGER") {
+      return allPages.filter(page => page.name !== 'Companies'); // Менеджер не видит Companies
+    } else {
+      return allPages.filter(page => page.name !== 'Companies' && page.name !== 'Workers'); // Пользователь не видит Companies и Workers
+    }
+  };
+
+  const filteredPages = getFilteredPages();
+
   return (
     <div>
       {isLoggedIn ?
-        <AppBar position="static" sx={{bgcolor: 'white'}}>
+        <AppBar position="static" sx={{ bgcolor: 'white' }}>
           <Container maxWidth="xl">
             <Toolbar disableGutters>
               <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1, color: 'black' }} />
@@ -102,6 +123,7 @@ function Header() {
                 EQUIP
               </Typography>
 
+              {/* Мобильное меню */}
               <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
                 <IconButton
                   size="large"
@@ -130,17 +152,21 @@ function Header() {
                     display: { xs: 'block', md: 'none' },
                   }}
                 >
-                  {pages.map((page) => (
-                    <MenuItem key={page} onClick={handleCloseNavMenu}>
-                      <Typography textAlign="center">
-                        <Link to={`/${page.toLowerCase()}`} style={{ textDecoration: 'none', color: 'black' }}>
-                          {page}
-                        </Link>
-                      </Typography>
+                  {filteredPages.map((page) => (
+                    <MenuItem key={page.name} onClick={handleCloseNavMenu} >
+                      <Box
+                        component={Link}
+                        to={page.path}
+                        sx={{ textDecoration: 'none', color: 'black', width: '100%', display: 'block' }}
+                      >
+                        <Typography textAlign="left">{page.name}</Typography>
+                      </Box>
                     </MenuItem>
                   ))}
                 </Menu>
               </Box>
+
+              {/* Десктопное меню */}
               <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1, color: 'black' }} />
               <Typography
                 variant="h5"
@@ -161,19 +187,20 @@ function Header() {
                 EQUIP
               </Typography>
               <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                {pages.map((page) => (
-                  <Button
-                    key={page}
-                    onClick={handleCloseNavMenu}
-                    sx={{ my: 2, color: 'black', display: 'block' }}
+                {filteredPages.map((page) => (
+                  <Box
+                    key={page.name}
                     component={Link}
-                    to={`/${page.toLowerCase()}`}
+                    to={page.path}
+                    onClick={handleCloseNavMenu}
+                    sx={{ my: 2, color: 'black', display: 'block', textDecoration: 'none', px: 2 }}
                   >
-                    {page}
-                  </Button>
+                    {page.name.toUpperCase()}
+                  </Box>
                 ))}
               </Box>
 
+              {/* Профиль пользователя */}
               <Box sx={{ flexGrow: 0 }}>
                 <Tooltip title="Open settings">
                   <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
@@ -197,8 +224,8 @@ function Header() {
                   onClose={handleCloseUserMenu}
                 >
                   {settings.map((setting) => (
-                    <MenuItem 
-                      key={setting} 
+                    <MenuItem
+                      key={setting}
                       onClick={setting === 'Logout' ? handleLogoutClick : handleCloseUserMenu}
                     >
                       <Typography textAlign="center">

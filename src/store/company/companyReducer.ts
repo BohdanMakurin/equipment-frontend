@@ -3,16 +3,6 @@ import { CompanyAdmin, User} from '../../models/models'
 import { Company } from '../../models/models'
 
 
-// interface Company {
-//   companyId: number
-//   admin: Admin
-//   name: string
-//   description: string
-//   createdAt: string
-//   updatedAt: string
-//   employees: User[]
-// }
-
 interface CompanyState {
   companies: Company[]
   isLoading: boolean
