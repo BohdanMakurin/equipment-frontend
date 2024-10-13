@@ -43,8 +43,8 @@ const EquipmentDetailsDialog: React.FC<EquipmentDetailsDialogProps> = ({
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editedEquipment, setEditedEquipment] = useState<Equipment | null>(equipment);
 
-  const isAdmin = useSelector(
-    (state: IRootState) => state.auth.profileData.profile?.role === 'ROLE_ADMIN'
+const isAdmin = useSelector(
+  (state: IRootState) => state.auth.profileData.profile?.role === 'ROLE_ADMIN'
 );
 
 const isManager = useSelector(
@@ -68,7 +68,7 @@ const isManager = useSelector(
                 [name]: value,
                 ...(name === 'category' && { category: categories.find(cat => cat.categoryId === value) || editedEquipment.category }),
                 ...(name === 'company' && { company: companies.find(comp => comp.companyId === value) || editedEquipment.company }),
-                ...(name === 'user' && { user: users.find(us => us.id === value) || editedEquipment.user }),
+                 ...(name === 'user' && { userId: Number(value) }),
             });
         }
     };
@@ -80,7 +80,7 @@ const isManager = useSelector(
         description: editedEquipment.description,
         serialNumber: editedEquipment.serialNumber,
         categoryId: String(editedEquipment.category?.categoryId || ''),
-        userId: String(editedEquipment.user?.id || ''),
+        userId: String(editedEquipment.userId || ''),
         companyId: String(editedEquipment.company?.companyId || ''),
         location: editedEquipment.location || '',
       };
@@ -119,31 +119,31 @@ const isManager = useSelector(
         )}
       </DialogContent>
       <DialogActions>
-      {isAdmin || isManager ? 
-        <>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleEditToggle}
-        >
-        {isEditing ? 'Cancel Editing' : 'Edit'}
-        </Button>
-        {!isEditing && (
-            <Button onClick={onClose} color="primary">
-              CLOSE
-            </Button>
-        )}
-        {isEditing && (
-            <Button onClick={handleSave} color="primary">
-              SAVE
-            </Button>
-        )}
-        </>
-      :
-        <Button onClick={onClose} color="primary">
-          CLOSE
-        </Button>
-      }
+        {isAdmin || isManager ? 
+          <>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleEditToggle}
+          >
+          {isEditing ? 'Cancel Editing' : 'Edit'}
+          </Button>
+          {!isEditing && (
+              <Button onClick={onClose} color="primary">
+                CLOSE
+              </Button>
+          )}
+          {isEditing && (
+              <Button onClick={handleSave} color="primary">
+                SAVE
+              </Button>
+          )}
+          </>
+        :
+          <Button onClick={onClose} color="primary">
+            CLOSE
+          </Button>
+        }
       </DialogActions>
     </Dialog>
   );

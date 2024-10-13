@@ -201,7 +201,14 @@ function Header() {
               </Box>
 
               {/* Профиль пользователя */}
-              <Box sx={{ flexGrow: 0 }}>
+              <Box sx={{ display: 'flex' }}>
+                <Typography 
+                sx={{color: 'black', alignContent: 'center', marginRight: 2}}
+                >
+                  <Link to={`/profile`} style={{ textDecoration: 'none', color: 'black'}}>
+                    {profile?.firstName} {profile?.lastName}
+                  </Link>
+                </Typography>
                 <Tooltip title="Open settings">
                   <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                     <Avatar alt="Eq" src="/static/images/avatar/2.jpg" />
@@ -227,18 +234,19 @@ function Header() {
                     <MenuItem
                       key={setting}
                       onClick={setting === 'Logout' ? handleLogoutClick : handleCloseUserMenu}
+                      sx={setting === 'Logout' ? { color: 'red' } : {}}
                     >
                       <Typography textAlign="center">
                         {setting === 'Logout' ? (
                           setting
                         ) : (
-                          <Link to={`/${setting.toLowerCase()}`} style={{ textDecoration: 'none', color: 'black' }}>
+                          <Link to={`/${setting.toLowerCase()}`} style={{ textDecoration: 'none', color: 'black'}}>
                             {setting}
                           </Link>
                         )}
                       </Typography>
                     </MenuItem>
-                  ))}
+                  ))} 
                 </Menu>
               </Box>
             </Toolbar>

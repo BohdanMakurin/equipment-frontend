@@ -10,7 +10,7 @@ import { createUser, fetchUsersByAdminId, fetchUsersByCompanyId, removeUser, upd
 import CreateUserDialog from "../../components/dialog/createUserDialog/createUserDialog";
 import { fetchCompaniesByAdminId } from "../../store/company/actionCreators";
 import DeleteUserDialog from "../../components/dialog/deleteUserDialog/deleteUserDialog";
-import UserDetailsDialog from "../../components/dialog/userDetailsDialog/userDetailsDialog"; // Импортируем новый диалог
+import UserDetailsDialog from "../../components/dialog/userDetailsDialog/userDetailsDialog";
 import { EditUserRequest, User } from "../../models/models";
 
 const Users = () => {
@@ -19,49 +19,29 @@ const Users = () => {
     const [openDetails, setOpenDetails] = useState(false);
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [openDeleteUserDialog, setOpenDeleteUserDialog] = useState(false);
-    const [companies, setCompanies] = useState<any[]>([]); // Добавлено для хранения списка компаний
-    const [userDetails, setUserDetails] = useState<any>(null); // Добавлено для хранения данных пользователя для деталей
+    const [companies, setCompanies] = useState<any[]>([]);
+    const [userDetails, setUserDetails] = useState<any>(null);
 
-    const isLoggedIn = useSelector(
-        (state: IRootState) => !!state.auth.authData.accessToken
-    );
-
-    const isAdmin = useSelector(
-        (state: IRootState) => state.auth.profileData.profile?.role === 'ROLE_ADMIN'
-    );
-
-    const isManager = useSelector(
-        (state: IRootState) => state.auth.profileData.profile?.role === 'ROLE_MANAGER'
-    );
-
-    const profileId = useSelector(
-        (state: IRootState) => state.auth.profileData.profile?.id
-    );
-
-    const profile = useSelector(
-        (state: IRootState) => state.auth.profileData.profile
-    );
+    const isLoggedIn = useSelector((state: IRootState) => !!state.auth.authData.accessToken);
+    const isAdmin = useSelector((state: IRootState) => state.auth.profileData.profile?.role === 'ROLE_ADMIN');
+    const isManager = useSelector((state: IRootState) => state.auth.profileData.profile?.role === 'ROLE_MANAGER');
+    const profileId = useSelector((state: IRootState) => state.auth.profileData.profile?.id);
+    const profile = useSelector((state: IRootState) => state.auth.profileData.profile);
 
     useEffect(() => {
         if (isLoggedIn && isAdmin && profileId) {
             dispatch(fetchUsersByAdminId(Number(profileId)));
             dispatch(fetchCompaniesByAdminId(Number(profileId)));
-        }else if (isLoggedIn && isManager && profile){
-            dispatch(fetchUsersByCompanyId(Number(profile.company.companyId)))
+        } else if (isLoggedIn && isManager && profile) {
+            dispatch(fetchUsersByCompanyId(Number(profile.company.companyId)));
         }
-
     }, [isLoggedIn, isAdmin, dispatch, profileId]);
 
-    const users = useSelector(
-        (state: IRootState) => state.users.users
-    );
-
-    const companiesFromState = useSelector(
-        (state: IRootState) => state.companies.companies
-    );
+    const users = useSelector((state: IRootState) => state.users.users);
+    const companiesFromState = useSelector((state: IRootState) => state.companies.companies);
 
     useEffect(() => {
-        setCompanies(companiesFromState); // Обновление списка компаний
+        setCompanies(companiesFromState);
     }, [companiesFromState]);
 
     const rows = users.map((user) => ({
@@ -74,8 +54,8 @@ const Users = () => {
     }));
 
     const columns: GridColDef[] = [
-        { field: 'id', headerName: 'ID', flex: 1, minWidth: 100},
-        { field: 'firstName', headerName: 'First Name', flex: 2, minWidth: 150},
+        { field: 'id', headerName: 'ID', flex: 1, minWidth: 100 },
+        { field: 'firstName', headerName: 'First Name', flex: 2, minWidth: 150 },
         { field: 'lastName', headerName: 'Last Name', flex: 2, minWidth: 150 },
         { field: 'email', headerName: 'E-mail', flex: 2, minWidth: 150 },
         { field: 'company', headerName: 'Company', flex: 2, minWidth: 150 },
@@ -93,14 +73,14 @@ const Users = () => {
                     >
                         <ModeEditOutlineOutlinedIcon />
                     </IconButton>
-                    {isAdmin?
-                    <IconButton
-                        sx={{ color: "red" }}
-                        onClick={() => handleDeleteClick(params.row.id)}
-                    >
-                        <DeleteOutlineOutlinedIcon />
-                    </IconButton>
-                    : []}
+                    {isAdmin ?
+                        <IconButton
+                            sx={{ color: "red" }}
+                            onClick={() => handleDeleteClick(params.row.id)}
+                        >
+                            <DeleteOutlineOutlinedIcon />
+                        </IconButton>
+                        : []}
                 </Box>
             ),
         },
@@ -109,7 +89,7 @@ const Users = () => {
     const handleEditClick = (userId: number) => {
         const user = users.find(user => user.id === userId);
         if (user) {
-            setUserDetails(user); // Устанавливаем детали пользователя
+            setUserDetails(user);
             setOpenDetails(true);
         }
     };
@@ -140,7 +120,7 @@ const Users = () => {
     };
 
     const handleCreateUser = (firstName: string, lastName: string, email: string, password: string, role: string, companyId: number) => {
-        dispatch(createUser({ firstName, lastName, email, password, role, companyId}));
+        dispatch(createUser({ firstName, lastName, email, password, role, companyId }));
         setOpenCreate(false);
     };
 
@@ -149,24 +129,88 @@ const Users = () => {
     };
 
     const handleConfirmDeleteUser = () => {
-        setOpenDeleteUserDialog(false); 
+        setOpenDeleteUserDialog(false);
         dispatch(removeUser(selectedUser.id));
+    };
+
+    // New function to print the table
+    const handlePrint = () => {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            const currentTime = new Date();
+            const formattedTime = `${currentTime.getHours().toString().padStart(2, '0')}:${currentTime.getMinutes().toString().padStart(2, '0')}:${currentTime.getSeconds().toString().padStart(2, '0')}`;
+            const formattedDate = `${currentTime.getFullYear()}-${(currentTime.getMonth() + 1).toString().padStart(2, '0')}-${currentTime.getDate().toString().padStart(2, '0')}`;
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>User Table</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; }
+                    </style>
+                </head>
+                <body>
+                    <h3>Workers Table</h3>
+                    <p>Printed by: ${profile?.firstName} ${profile?.lastName} </p>
+                    <p> At: ${formattedDate} ${formattedTime} </p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>E-mail</th>
+                                <th>Company</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows.map(row => `
+                                <tr>
+                                    <td>${row.id}</td>
+                                    <td>${row.firstName}</td>
+                                    <td>${row.lastName}</td>
+                                    <td>${row.email}</td>
+                                    <td>${row.company}</td>
+                                    <td>${row.role}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
     };
 
     return (
         <div style={{ height: 'auto', width: '80%', margin: '0 auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '20px 0' }}>
                 <h1 style={{ margin: 0 }}>Workers</h1>
-                {isAdmin? 
-                <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<AddCircleOutlineOutlinedIcon />}
-                    onClick={handleOpenCreate}
-                >
-                    Add Employee
-                </Button>
-                : []}
+                <div>
+                    {isAdmin ?
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<AddCircleOutlineOutlinedIcon />}
+                            onClick={handleOpenCreate}
+                        >
+                            Add Employee
+                        </Button>
+                        : []}
+                    <Button
+                        variant="outlined"
+                        color="secondary"
+                        onClick={handlePrint}
+                        style={{ marginLeft: '10px' }}
+                    >
+                        Print
+                    </Button>
+                </div>
             </div>
             <div style={{ height: 'auto', width: '100%', marginBottom: '100px' }}>
                 <DataGrid
@@ -180,6 +224,8 @@ const Users = () => {
                     pageSizeOptions={[5, 10]}
                     disableColumnResize
                     autoHeight
+                    disableRowSelectionOnClick
+                    disableColumnSelector
                 />
             </div>
 
@@ -188,7 +234,7 @@ const Users = () => {
                 open={openCreate}
                 onClose={handleCloseCreate}
                 onCreate={handleCreateUser}
-                companies={companies} 
+                companies={companies}
             />
 
             {/* Диалог для удаления пользователя */}
@@ -205,7 +251,7 @@ const Users = () => {
                     open={openDetails}
                     onClose={handleCloseDetails}
                     onSave={handleSaveDetails}
-                    userDetails= {userDetails}
+                    userDetails={userDetails}
                     companies={companies}
                 />
             )}

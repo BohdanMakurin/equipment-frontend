@@ -97,7 +97,7 @@ export interface Equipment{
   createdAt: string;
   updatedAt: string;
   category: Category;
-  user: User;
+  userId: number;
   qrCode: string;
   company: Company;
   location: string;

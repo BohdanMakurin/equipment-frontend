@@ -15,7 +15,6 @@ import CreateEquipmentDialog from "../../components/dialog/createEquipmentDialog
 import { fetchCategoriesByAdminId } from "../../store/equipmentCategory/actionCreators";
 import { fetchUsersByAdminId, fetchUsersByCompanyId } from "../../store/user/actionCreators";
 import { EquipmentEditRequest } from "../../models/models";
-import { find } from "@reduxjs/toolkit/dist/utils";
 
 const Equipment = () => {
     const dispatch = useAppDispatch();
@@ -23,8 +22,8 @@ const Equipment = () => {
     const [openDetails, setOpenDetails] = useState(false);
     const [selectedEquipment, setSelectedEquipment] = useState<any>(null);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-    const [openCategoryDialog, setOpenCategoryDialog] = useState(false); 
-
+    const [openCategoryDialog, setOpenCategoryDialog] = useState(false);
+    
     const isLoggedIn = useSelector(
         (state: IRootState) => !!state.auth.authData.accessToken
     );
@@ -48,22 +47,21 @@ const Equipment = () => {
     useEffect(() => {
         if (isLoggedIn && isAdmin && profileId) {
             dispatch(fetchEquipmentByAdminId(Number(profileId)));
-            dispatch(fetchCompaniesByAdminId(Number(profileId))); 
-            dispatch(fetchCategoriesByAdminId(Number(profileId))); 
+            dispatch(fetchCompaniesByAdminId(Number(profileId)));
+            dispatch(fetchCategoriesByAdminId(Number(profileId)));
             dispatch(fetchUsersByAdminId(Number(profileId)))
-        }else if (isLoggedIn && isManager && profile){
+        } else if (isLoggedIn && isManager && profile) {
             dispatch(fetchEquipmentByCompanyId(Number(profile.company.companyId)));
-            dispatch(fetchCompaniesByAdminId(Number(profile.company.admin.id))); 
-            dispatch(fetchCategoriesByAdminId(Number(profile.company.admin.id))); 
+            dispatch(fetchCompaniesByAdminId(Number(profile.company.admin.id)));
+            dispatch(fetchCategoriesByAdminId(Number(profile.company.admin.id)));
             dispatch(fetchUsersByCompanyId(Number(profile.company.companyId)));
-        }else if((isLoggedIn && !isManager && !isAdmin && profile)){
+        } else if (isLoggedIn && !isManager && !isAdmin && profile) {
             dispatch(fetchEquipmentByUserId(Number(profileId)));
         }
     }, [isLoggedIn, isAdmin, dispatch, profileId, profile, isManager]);
 
     const equipment = useSelector(
         (state: IRootState) => state.equipment.equipmentList
-        
     );
 
     const companies = useSelector(
@@ -73,23 +71,30 @@ const Equipment = () => {
     const categories = useSelector(
         (state: IRootState) => state.equipmentCategory.categories
     );
+
     const users = useSelector(
         (state: IRootState) => state.users.users
     );
-    const rows = equipment.map((item) => ({
-        id: item.equipmentId,
-        name: item.name,
-        serialNumber: item.serialNumber,
-        category: item.category.name,
-        location: item.location,
-        owner: item.user? item.user.firstName + " " + item.user.lastName : "No specified",
-        // owner: users.find((user) => user.id == item.user)
-        company: item.company.name
-    }));
+
+    const rows = equipment.map((item) => {
+        const user = users.find((u) => u.id === item.userId);
+        
+        const owner = user ? `${user.firstName} ${user.lastName}` : 'Unknown';
     
+        return {
+            id: item.equipmentId,
+            name: item.name,
+            serialNumber: item.serialNumber,
+            category: item.category.name,
+            location: item.location,
+            owner: owner,
+            company: item.company.name
+        };
+    });
+
     const columns: GridColDef[] = [
-        { field: 'id', headerName: 'ID', flex: 1, minWidth: 100},
-        { field: 'name', headerName: 'Name', flex: 2, minWidth: 150},
+        { field: 'id', headerName: 'ID', flex: 1, minWidth: 100 },
+        { field: 'name', headerName: 'Name', flex: 2, minWidth: 150 },
         { field: 'serialNumber', headerName: 'Serial Number', flex: 2, minWidth: 150 },
         { field: 'category', headerName: 'Category', flex: 2, minWidth: 150 },
         { field: 'location', headerName: 'Location', flex: 2, minWidth: 150 },
@@ -108,14 +113,14 @@ const Equipment = () => {
                     >
                         <ModeEditOutlineOutlinedIcon />
                     </IconButton>
-                    {isAdmin || isManager ? 
-                    <IconButton
-                        sx={{ color: "red" }}
-                        onClick={() => handleDeleteClick(params.row.id)}
-                    >
-                        <DeleteOutlineOutlinedIcon />
-                    </IconButton>
-                    : []}
+                    {isAdmin || isManager ?
+                        <IconButton
+                            sx={{ color: "red" }}
+                            onClick={() => handleDeleteClick(params.row.id)}
+                        >
+                            <DeleteOutlineOutlinedIcon />
+                        </IconButton>
+                        : []}
                 </Box>
             ),
         },
@@ -142,8 +147,10 @@ const Equipment = () => {
         setSelectedEquipment(null);
     };
 
-    const handleSaveDetails = (updatedEquipment:EquipmentEditRequest, equipmentId: number) => {
-        dispatch(updateEquipmentById(updatedEquipment, equipmentId));
+    const handleSaveDetails = (updatedEquipment: EquipmentEditRequest, equipmentId: number) => {
+        dispatch(updateEquipmentById(updatedEquipment, equipmentId)).then(() => {
+            dispatch(fetchEquipmentByAdminId(Number(profileId)));
+        });
     };
 
     const handleCloseDeleteDialog = () => {
@@ -173,31 +180,93 @@ const Equipment = () => {
         dispatch(createEquipment({ name, description, serialNumber, categoryId, companyId }));
         setOpenCreate(false);
     };
+    
+    const handlePrintTable = () => {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            const currentTime = new Date();
+            const formattedTime = `${currentTime.getHours().toString().padStart(2, '0')}:${currentTime.getMinutes().toString().padStart(2, '0')}:${currentTime.getSeconds().toString().padStart(2, '0')}`;
+            const formattedDate = `${currentTime.getFullYear()}-${(currentTime.getMonth() + 1).toString().padStart(2, '0')}-${currentTime.getDate().toString().padStart(2, '0')}`;
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Equipment Table</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; }
+                            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                            th { background-color: #f2f2f2; }
+                        </style>
+                    </head>
+                    <body>
+                        <h3>Equipment Table</h3>              
+                        <p>Printed by: ${profile?.firstName} ${profile?.lastName} </p>
+                        <p> At: ${formattedDate} ${formattedTime} </p>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Serial Number</th>
+                                    <th>Category</th>
+                                    <th>Location</th>
+                                    <th>Owner</th>
+                                    <th>Company</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows.map(row => `
+                                    <tr>
+                                        <td>${row.id}</td>
+                                        <td>${row.name}</td>
+                                        <td>${row.serialNumber}</td>
+                                        <td>${row.category}</td>
+                                        <td>${row.location}</td>
+                                        <td>${row.owner}</td>
+                                        <td>${row.company}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+    };
 
     return (
         <div style={{ height: 'auto', width: '80%', margin: '0 auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '20px 0' }}>
                 <h1 style={{ margin: 0 }}>Equipment</h1>
-                {isAdmin || isManager?
-                <>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        startIcon={<AddCircleOutlineOutlinedIcon />}
-                        onClick={handleOpenCategoryDialog}
-                    >
-                        View EquipmentCategories
-                    </Button>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        startIcon={<AddCircleOutlineOutlinedIcon />}
-                        onClick={() => setOpenCreate(true)}
-                    >
-                        Add Equipment
-                    </Button>
-                </>
-                :[]}
+                {isAdmin || isManager ?
+                    <>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<AddCircleOutlineOutlinedIcon />}
+                            onClick={handleOpenCategoryDialog}
+                        >
+                            View Equipment Categories
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<AddCircleOutlineOutlinedIcon />}
+                            onClick={() => setOpenCreate(true)}
+                        >
+                            Add Equipment
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="secondary"
+                            onClick={handlePrintTable}
+                        >
+                            Print
+                        </Button>
+                    </>
+                    : []}
             </div>
             <div style={{ height: 'auto', width: '100%', marginBottom: '100px' }}>
                 <DataGrid
@@ -211,14 +280,16 @@ const Equipment = () => {
                     pageSizeOptions={[5, 10]}
                     disableColumnResize
                     autoHeight
+                    disableRowSelectionOnClick
+                    disableColumnSelector
                 />
             </div>
-            
+
             <CreateEquipmentDialog
                 open={openCreate}
                 onClose={handleCloseCreate}
                 onCreate={handleCreateEquipment}
-                companies={companies} 
+                companies={companies}
                 categories={categories}
             />
 
@@ -228,7 +299,7 @@ const Equipment = () => {
                     onClose={handleCloseDetails}
                     onSave={handleSaveDetails}
                     equipment={selectedEquipment}
-                    users={users} 
+                    users={users}
                     companies={companies}
                     categories={categories}
                 />
