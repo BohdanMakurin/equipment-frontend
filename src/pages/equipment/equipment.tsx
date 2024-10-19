@@ -78,9 +78,11 @@ const Equipment = () => {
 
     const rows = equipment.map((item) => {
         const user = users.find((u) => u.id === item.userId);
+        let owner = user ? `${user.firstName} ${user.lastName}` : 'Unknown';
         
-        const owner = user ? `${user.firstName} ${user.lastName}` : 'Unknown';
-    
+        if (!isAdmin && !isManager) {
+            owner = `${profile?.firstName} ${profile?.lastName}`;
+        }
         return {
             id: item.equipmentId,
             name: item.name,

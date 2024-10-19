@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
+import React, { useState } from 'react';
+import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, MenuItem, Select, InputLabel, FormControl, FormHelperText } from '@mui/material';
 
-// Обновите интерфейс, чтобы включить список компаний
 interface CreateUserDialogProps {
     open: boolean;
     onClose: () => void;
@@ -16,21 +15,37 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClose, onCr
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('');
     const [companyId, setCompanyId] = useState<number | ''>('');
+    const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = () => {
-        if (firstName && lastName && email && password && role && companyId) {
-            onCreate(firstName, lastName, email, password, role, companyId);
-            setFirstName('');
-            setLastName('');
-            setEmail('');
-            setPassword('');
-            setRole('');
-            setCompanyId('');
+        if (!firstName || !lastName || !email || !password || !role || !companyId) {
+            setError('All fields are required');
+            return;
         }
+        setError(null); // Сбросить ошибку, если все поля заполнены
+        onCreate(firstName, lastName, email, password, role, companyId);
+        setFirstName('');
+        setLastName('');
+        setEmail('');
+        setPassword('');
+        setRole('');
+        setCompanyId('');
+    };
+
+    const handleClose = () => {
+        onClose();
+        // Сброс состояния при закрытии
+        setFirstName('');
+        setLastName('');
+        setEmail('');
+        setPassword('');
+        setRole('');
+        setCompanyId('');
+        setError(null);
     };
 
     return (
-        <Dialog open={open} onClose={onClose}>
+        <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
             <DialogTitle>Create User</DialogTitle>
             <DialogContent>
                 <TextField
@@ -42,7 +57,10 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClose, onCr
                     variant="outlined"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
+                    error={!firstName && Boolean(error)} // Указать ошибку
                 />
+                {!firstName && error && <FormHelperText error>{error}</FormHelperText>} {/* Сообщение об ошибке */}
+
                 <TextField
                     margin="dense"
                     label="Last Name"
@@ -51,7 +69,10 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClose, onCr
                     variant="outlined"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
+                    error={!lastName && Boolean(error)} // Указать ошибку
                 />
+                {!lastName && error && <FormHelperText error>{error}</FormHelperText>} {/* Сообщение об ошибке */}
+
                 <TextField
                     margin="dense"
                     label="Email"
@@ -60,7 +81,10 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClose, onCr
                     variant="outlined"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    error={!email && Boolean(error)} // Указать ошибку
                 />
+                {!email && error && <FormHelperText error>{error}</FormHelperText>} {/* Сообщение об ошибке */}
+
                 <TextField
                     margin="dense"
                     label="Password"
@@ -69,8 +93,11 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClose, onCr
                     variant="outlined"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    error={!password && Boolean(error)} // Указать ошибку
                 />
-                <FormControl fullWidth margin="dense" variant="outlined">
+                {!password && error && <FormHelperText error>{error}</FormHelperText>} {/* Сообщение об ошибке */}
+
+                <FormControl fullWidth margin="dense" variant="outlined" error={!role && Boolean(error)}>
                     <InputLabel>Role</InputLabel>
                     <Select
                         value={role}
@@ -80,8 +107,10 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClose, onCr
                         <MenuItem value="ROLE_USER">User</MenuItem>
                         <MenuItem value="ROLE_MANAGER">Manager</MenuItem>
                     </Select>
+                    {!role && error && <FormHelperText>Please select a role</FormHelperText>} {/* Сообщение об ошибке */}
                 </FormControl>
-                <FormControl fullWidth margin="dense" variant="outlined">
+
+                <FormControl fullWidth margin="dense" variant="outlined" error={!companyId && Boolean(error)}>
                     <InputLabel>Company</InputLabel>
                     <Select
                         value={companyId}
@@ -94,10 +123,11 @@ const CreateUserDialog: React.FC<CreateUserDialogProps> = ({ open, onClose, onCr
                             </MenuItem>
                         ))}
                     </Select>
+                    {!companyId && error && <FormHelperText>Please select a company</FormHelperText>} {/* Сообщение об ошибке */}
                 </FormControl>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} color="primary">
+                <Button onClick={handleClose} color="primary">
                     Cancel
                 </Button>
                 <Button onClick={handleSubmit} color="primary">

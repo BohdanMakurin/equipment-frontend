@@ -9,6 +9,9 @@ import {
   Button,
 } from '@mui/material';
 import { Equipment, User, Company, Category } from '../../../models/models';
+import { useSelector } from 'react-redux';
+import { IRootState } from '../../../store';
+import {QRCodeSVG} from 'qrcode.react';
 
 interface EquipmentDetailsProps {
   equipment: Equipment | null;
@@ -35,23 +38,36 @@ const EquipmentDetails: React.FC<EquipmentDetailsProps> = ({
             <head>
               <title>Print QR Code</title>
             </head>
-            <body>${printContent}</body>
+            <body onload="window.print(); window.close();">
+              ${printContent}
+            </body>
           </html>
         `);
-
-        // Ждем загрузки содержимого и затем вызываем печать
+        
+        
         printWindow.document.close();
         printWindow.focus();
-        printWindow.onload = () => {
-          printWindow.print();
-          printWindow.close();
-        };
       }
     }
   };
+  const isAdmin = useSelector(
+    (state: IRootState) => state.auth.profileData.profile?.role === 'ROLE_ADMIN'
+  );
+
+  const isManager = useSelector(
+      (state: IRootState) => state.auth.profileData.profile?.role === 'ROLE_MANAGER'
+  );
+
+  const profile = useSelector(
+      (state: IRootState) => state.auth.profileData.profile
+  );
 
   const user = users.find((u) => u.id === equipment?.userId);
-  const ownerName = user ? `${user.firstName} ${user.lastName}` : 'Unknown';
+  let ownerName = user ? `${user.firstName} ${user.lastName}` : 'Unknown';
+  
+  if (!isAdmin && !isManager) {
+    ownerName = `${profile?.firstName} ${profile?.lastName}`;
+  }
   return (
     <Box mb={2} textAlign="center">
       <Typography variant="h4" gutterBottom>Equipment Details</Typography>
@@ -97,20 +113,17 @@ const EquipmentDetails: React.FC<EquipmentDetailsProps> = ({
         <Typography variant="h6">QR Code:</Typography>
         {equipment?.qrCode ? (
           <>
-            <img
-              src={`http://localhost:8080/${equipment.qrCode}`}
-              alt="QR Code"
-              style={{ cursor: 'pointer', width: '150px', height: '150px' }}
-              onClick={handlePrint}
-            />
+            {/* Генерация QR-кода из ключа */}
+            <QRCodeSVG value={equipment.qrCode} size={150} style={{ cursor: 'pointer' }} onClick={handlePrint} />
             <div style={{ display: 'none' }} ref={printRef}>
-              <img src={`http://localhost:8080/${equipment.qrCode}`} alt="QR Code" />
+              <QRCodeSVG value={equipment.qrCode} size={150} />
             </div>
           </>
         ) : (
           <p>QR Code not available</p>
         )}
       </Box>
+
 
     </Box>
   );

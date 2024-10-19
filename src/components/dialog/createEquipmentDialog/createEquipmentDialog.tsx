@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, MenuItem, Select, InputLabel, FormControl, FormHelperText } from '@mui/material';
 
 interface CreateEquipmentDialogProps {
     open: boolean;
@@ -15,20 +15,34 @@ const CreateEquipmentDialog: React.FC<CreateEquipmentDialogProps> = ({ open, onC
     const [serialNumber, setSerialNumber] = useState('');
     const [categoryId, setCategoryId] = useState<number | ''>('');
     const [companyId, setCompanyId] = useState<number | ''>('');
+    const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = () => {
-        if (name && description && serialNumber && categoryId && companyId) {
-            onCreate(name, description, serialNumber, categoryId, companyId);
-            setName('');
-            setDescription('');
-            setSerialNumber('');
-            setCategoryId('');
-            setCompanyId('');
+        if (!name || !description || !serialNumber || !categoryId || !companyId) {
+            setError('All fields are required');
+            return;
         }
+        setError(null); // Сбросить ошибку, если все поля заполнены
+        onCreate(name, description, serialNumber, categoryId, companyId);
+        setName('');
+        setDescription('');
+        setSerialNumber('');
+        setCategoryId('');
+        setCompanyId('');
+    };
+
+    const handleClose = () => {
+        onClose();
+        setName('');
+        setDescription('');
+        setSerialNumber('');
+        setCategoryId('');
+        setCompanyId('');
+        setError(null);
     };
 
     return (
-        <Dialog open={open} onClose={onClose}>
+        <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
             <DialogTitle>Create Equipment</DialogTitle>
             <DialogContent>
                 <TextField
@@ -40,7 +54,10 @@ const CreateEquipmentDialog: React.FC<CreateEquipmentDialogProps> = ({ open, onC
                     variant="outlined"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    error={!name && Boolean(error)} // Указать ошибку
                 />
+                {!name && error && <FormHelperText error>{error}</FormHelperText>} {/* Сообщение об ошибке */}
+
                 <TextField
                     margin="dense"
                     label="Description"
@@ -49,7 +66,10 @@ const CreateEquipmentDialog: React.FC<CreateEquipmentDialogProps> = ({ open, onC
                     variant="outlined"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
+                    error={!description && Boolean(error)} // Указать ошибку
                 />
+                {!description && error && <FormHelperText error>{error}</FormHelperText>} {/* Сообщение об ошибке */}
+
                 <TextField
                     margin="dense"
                     label="Serial Number"
@@ -58,8 +78,11 @@ const CreateEquipmentDialog: React.FC<CreateEquipmentDialogProps> = ({ open, onC
                     variant="outlined"
                     value={serialNumber}
                     onChange={(e) => setSerialNumber(e.target.value)}
+                    error={!serialNumber && Boolean(error)} // Указать ошибку
                 />
-                <FormControl fullWidth margin="dense" variant="outlined">
+                {!serialNumber && error && <FormHelperText error>{error}</FormHelperText>} {/* Сообщение об ошибке */}
+
+                <FormControl fullWidth margin="dense" variant="outlined" error={!categoryId && Boolean(error)}>
                     <InputLabel>Category</InputLabel>
                     <Select
                         value={categoryId}
@@ -72,8 +95,10 @@ const CreateEquipmentDialog: React.FC<CreateEquipmentDialogProps> = ({ open, onC
                             </MenuItem>
                         ))}
                     </Select>
+                    {!categoryId && error && <FormHelperText>Please select a category</FormHelperText>} {/* Сообщение об ошибке */}
                 </FormControl>
-                <FormControl fullWidth margin="dense" variant="outlined">
+
+                <FormControl fullWidth margin="dense" variant="outlined" error={!companyId && Boolean(error)}>
                     <InputLabel>Company</InputLabel>
                     <Select
                         value={companyId}
@@ -86,10 +111,11 @@ const CreateEquipmentDialog: React.FC<CreateEquipmentDialogProps> = ({ open, onC
                             </MenuItem>
                         ))}
                     </Select>
+                    {!companyId && error && <FormHelperText>Please select a company</FormHelperText>} {/* Сообщение об ошибке */}
                 </FormControl>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} color="primary">
+                <Button onClick={handleClose} color="primary">
                     Cancel
                 </Button>
                 <Button onClick={handleSubmit} color="primary">
