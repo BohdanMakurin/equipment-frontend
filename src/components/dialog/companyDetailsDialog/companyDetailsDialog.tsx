@@ -27,7 +27,7 @@ const CompanyDetailsDialog: React.FC<CompanyDetailsDialogProps> = ({ open, compa
     }, [company]);
 
     useEffect(() => {
-        // При закрытии диалога сбрасываем состояние редактирования
+        
         if (!open) {
             setIsEditing(false);
         }

@@ -8,3 +8,4 @@ export const getEquipmentByCompanyId = (id: number): AxiosPromise<Equipment[]> =
 export const createEquipment = (data: CreateEquipmentRequest): AxiosPromise<Equipment> => axiosInstance.post(`/api/equipment`, data);
 export const deleteEquipment = (id: number): AxiosPromise<String> => axiosInstance.delete(`/api/equipment/${id}`);
 export const updateEquipment = (id: number, params: EquipmentEditRequest): AxiosPromise<Equipment> => axiosInstance.put(`/api/equipment/${id}`, params)
+export const getExpiredEquipment = (companyId: number): AxiosPromise<Equipment[]> => axiosInstance.get(`/api/equipment/expiredEquipment/${companyId}`);

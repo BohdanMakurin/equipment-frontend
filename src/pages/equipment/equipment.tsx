@@ -15,6 +15,8 @@ import CreateEquipmentDialog from "../../components/dialog/createEquipmentDialog
 import { fetchCategoriesByAdminId } from "../../store/equipmentCategory/actionCreators";
 import { fetchUsersByAdminId, fetchUsersByCompanyId } from "../../store/user/actionCreators";
 import { EquipmentEditRequest } from "../../models/models";
+import SelectCompanyDialog from "../../components/dialog/selectCompanyDialog/selectCompanyDialog";
+import { getExpiredEquipment } from "../../api/equipment";
 
 const Equipment = () => {
     const dispatch = useAppDispatch();
@@ -23,7 +25,10 @@ const Equipment = () => {
     const [selectedEquipment, setSelectedEquipment] = useState<any>(null);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [openCategoryDialog, setOpenCategoryDialog] = useState(false);
-    
+    const [openSelectCompanyDialog, setOpenSelectCompanyDialog] = useState(false);
+    const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
+    const [expiredEquipment, setExpiredEquipment] = useState<any[]>([]);
+
     const isLoggedIn = useSelector(
         (state: IRootState) => !!state.auth.authData.accessToken
     );
@@ -78,8 +83,8 @@ const Equipment = () => {
 
     const rows = equipment.map((item) => {
         const user = users.find((u) => u.id === item.userId);
-        let owner = user ? `${user.firstName} ${user.lastName}` : 'Unknown';
-        
+        let owner = user ? `${user.firstName} ${user.lastName}` : 'Not specified';
+        let location = item.location ? `${item.location}` : 'Not specified';
         if (!isAdmin && !isManager) {
             owner = `${profile?.firstName} ${profile?.lastName}`;
         }
@@ -88,7 +93,7 @@ const Equipment = () => {
             name: item.name,
             serialNumber: item.serialNumber,
             category: item.category.name,
-            location: item.location,
+            location: location,
             owner: owner,
             company: item.company.name
         };
@@ -238,6 +243,88 @@ const Equipment = () => {
         }
     };
 
+    const handleOpenSelectCompanyDialog = () => {
+        setOpenSelectCompanyDialog(true);
+    };
+
+    const handleCloseSelectCompanyDialog = () => {
+        setOpenSelectCompanyDialog(false);
+    };
+
+    const handleSelectCompany = (companyId: number) => {
+        setSelectedCompanyId(companyId);
+        setOpenSelectCompanyDialog(false);
+
+        getExpiredEquipment(companyId).then((response) => {
+            const expired = response.data; 
+            if (expired.length === 0) {
+                alert('Company has no expired equipment');
+            } else {
+                setExpiredEquipment(expired); 
+                handlePrintExpiredEquipment(expired); 
+            }
+        }).catch((error) => {
+            console.error('Error fetching expired equipment', error);
+        });
+    };
+
+    const handlePrintExpiredEquipment = (expiredEquipment: any[]) => {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            const currentTime = new Date();
+            const formattedTime = `${currentTime.getHours().toString().padStart(2, '0')}:${currentTime.getMinutes().toString().padStart(2, '0')}:${currentTime.getSeconds().toString().padStart(2, '0')}`;
+            const formattedDate = `${currentTime.getFullYear()}-${(currentTime.getMonth() + 1).toString().padStart(2, '0')}-${currentTime.getDate().toString().padStart(2, '0')}`;
+
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Expired Equipment</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; }
+                            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                            th { background-color: #f2f2f2; }
+                        </style>
+                    </head>
+                    <body>
+                        <h3>Expired Equipment</h3>              
+                        <p>Printed by: ${profile?.firstName} ${profile?.lastName}</p>
+                        <p>At: ${formattedDate} ${formattedTime}</p>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Serial Number</th>
+                                    <th>Category</th>
+                                    <th>Location</th>
+                                    <th>Owner</th>
+                                    <th>Company</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${expiredEquipment.map(row => `
+                                    <tr>
+                                        <td>${row.id}</td>
+                                        <td>${row.name}</td>
+                                        <td>${row.serialNumber}</td>
+                                        <td>${row.category.name}</td>
+                                        <td>${row.location}</td>
+                                        <td>${row.user.firstName} ${row.user.lastName}</td>
+                                        <td>${row.company.name}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </body>
+                </html>
+            `);
+
+            printWindow.document.close();
+            printWindow.print();
+        }
+    };
+
     return (
         <div style={{ height: 'auto', width: '80%', margin: '0 auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '20px 0' }}>
@@ -259,6 +346,13 @@ const Equipment = () => {
                             onClick={() => setOpenCreate(true)}
                         >
                             Add Equipment
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="secondary"
+                            onClick={handleOpenSelectCompanyDialog}
+                        >
+                            View Expired Equipment
                         </Button>
                         <Button
                             variant="outlined"
@@ -318,6 +412,12 @@ const Equipment = () => {
                 open={openCategoryDialog}
                 onClose={handleCloseCategoryDialog}
                 categories={categories}
+            />
+            <SelectCompanyDialog
+                open={openSelectCompanyDialog}
+                onClose={handleCloseSelectCompanyDialog}
+                onSelect={handleSelectCompany}
+                companies={companies}
             />
         </div>
     );

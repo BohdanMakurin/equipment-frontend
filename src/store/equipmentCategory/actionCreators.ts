@@ -8,7 +8,7 @@ import {
   updateCategory,
   deleteCategory
 } from "./equipmentCategoryReducer";
-import { CreateCategoryRequest } from "../../models/models";
+import { CreateCategoryRequest, UpdateCategoryRequest } from "../../models/models";
 
 export const RESET_CATEGORY_STORE = 'RESET_CATEGORY_STORE';
 
@@ -54,16 +54,16 @@ export const createCategory = (category: CreateCategoryRequest) =>
     }
 
 // Action creator для обновления категории
-// export const updateCategoryById = (category: CreateCategoryRequest, id: number) =>
-//     async (dispatch: Dispatch<any>): Promise<void> => {
-//       try {
-//         const res = await api.equipmentCategory.updateCategory(id, category);
-//         dispatch(updateCategory(res.data));
-//       } catch (e: any) {
-//         console.error(e);
-//         dispatch(loadCategoriesFailure(e.message));
-//       }
-//     }
+export const updateCategoryById = (category: UpdateCategoryRequest, id: number) =>
+    async (dispatch: Dispatch<any>): Promise<void> => {
+      try {
+        const res = await api.equipmentCategory.updateCategory(id, category);
+        dispatch(updateCategory(res.data));
+      } catch (e: any) {
+        console.error(e);
+        dispatch(loadCategoriesFailure(e.message));
+      }
+    }
 
 // Action creator для удаления категории
 export const removeCategory = (categoryId: number) =>

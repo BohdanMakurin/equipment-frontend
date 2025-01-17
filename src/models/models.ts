@@ -73,12 +73,19 @@ export interface AddCategory{
 export interface CreateCategoryRequest{
   name: string;
   adminId: number;
+  expirationPeriodInMonths: number;
+}
+
+export interface UpdateCategoryRequest{
+  name: string;
+  expirationPeriodInMonths: number;
 }
 
 export interface Category{
   categoryId: number;
   name: string;
   admin: User;
+  expirationPeriodInMonths: number;
 }
 
 export interface CreateEquipmentRequest{
